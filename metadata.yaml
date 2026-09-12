@@ -1,7 +1,7 @@
 name: astrbot_plugin_onebot_bridge
 display_name: OneBot桥接插件
 desc: 主副Bot桥接插件，支持将消息转发到支持OneBot v11协议的副Bot
-version: 1.1.3
+version: 1.1.4
 astrbot_version: ">=4.16,<5"
 author: 苏月晅 # 作者
 repo: https://github.com/yuexuan6699/astrbot_plugin_onebot_bridge

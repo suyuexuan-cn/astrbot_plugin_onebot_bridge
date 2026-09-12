@@ -9,7 +9,7 @@ import astrbot.api.message_components as Comp
 from .service import BotCommunicationCore
 
 
-@register("astrbot_plugin_onebot_bridge", "苏月晅", "OneBot 桥接插件，支持将消息转发到副 Bot 并支持 OneBot v11 协议", "1.1.2", "https://github.com/yuexuan6699/astrbot_plugin_onebot_bridge")
+@register("astrbot_plugin_onebot_bridge", "苏月晅", "OneBot 桥接插件，支持将消息转发到副 Bot 并支持 OneBot v11 协议", "1.1.4", "https://github.com/yuexuan6699/astrbot_plugin_onebot_bridge")
 class BotCommunicationPlugin(Star):
     FORWARD_TYPE_FULL = "full"
     FORWARD_TYPE_STRIP = "strip"

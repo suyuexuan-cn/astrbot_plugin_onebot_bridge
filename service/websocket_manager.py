@@ -241,12 +241,9 @@ class WebSocketManager:
             logger.error(f"[Bot通信] 发送连接事件失败 {client_name} ({client.uri}): {e}")
     
     async def reconnect(self, client_name: str):
-        if self.reconnect_tasks.get(client_name) and not self.reconnect_tasks[client_name].done():
-            try:
-                self.reconnect_tasks[client_name].cancel()
-                logger.debug(f"[Bot通信] 已取消WebSocket客户端 {client_name} 的现有重连任务")
-            except Exception:
-                pass
+        existing = self.reconnect_tasks.get(client_name)
+        if existing and not existing.done():
+            return
         
         task = asyncio.create_task(self.connect_to_bot(client_name))
         
@@ -264,17 +261,15 @@ class WebSocketManager:
         self.reconnect_tasks[client_name] = task
     
     async def connect_all(self):
-        tasks = [self.connect_to_bot(name) for name, client in self.websocket_clients.items() if client.enable]
-        results = await asyncio.gather(*tasks, return_exceptions=True)
-        
-        success_count = sum(1 for r in results if r is True)
-        total_count = len([client for client in self.websocket_clients.values() if client.enable])
-        logger.debug(f"[Bot通信] 已连接所有WebSocket客户端，成功 {success_count}/{total_count}")
+        # 后台启动连接，避免无限重连阻塞 AstrBot 插件初始化流程
+        for name, client in self.websocket_clients.items():
+            if client.enable:
+                await self.reconnect(name)
         
         if self._monitor_task is None:
             self._monitor_task = asyncio.create_task(self._monitor_connections())
         
-        return success_count
+        return len([client for client in self.websocket_clients.values() if client.enable])
     
     async def send_message(self, message: Any) -> int:
         success_count = 0
