@@ -21,16 +21,30 @@
 - 支持每个连接独立配置转发规则
   - 可为每个 WebSocket 客户端/服务器、HTTP 客户端单独配置转发规则
   - 支持针对不同副 Bot 设置不同的触发条件和转发策略
-- 完整支持 OneBot v11 协议消息格式
+  - **按连接定向投递**：命中哪个连接的规则，就只推给那条连接，不会重复投递
+- 完整支持 OneBot v11 事件与消息格式
+  - `message`：各类消息事件
+  - `notice`：群成员增减、禁言、撤回、戳一戳等通知事件
+  - `request`：加好友、加群请求
+  - `meta_event`：`lifecycle` 连接事件与 `heartbeat` 心跳（客户端与服务端都会发送）
 - 支持多种消息类型转换
   - 文本、图片、@、表情、语音、视频、回复、文件
   - JSON、XML、位置、联系人、骰子、猜拳、戳一戳、音乐、合并转发等
 - 支持心跳检测和自动重连机制（WebSocket 客户端）
+- 支持 Token 鉴权
+  - WebSocket 客户端：以 `Authorization: Bearer <token>` 请求头下发
+  - WebSocket 服务器 / HTTP 服务器 / HTTP SSE 服务器：支持 `Authorization: Bearer`、`access_token` 请求头与 `?access_token=` 查询参数
+- 支持 `message_post_format` 选择 `array`（消息段数组）或 `string`（CQ 码）格式
+  - 发送方向支持 CQ 码解析：`send_msg` 收到 `"...[CQ:image,file=x.png]"` 会自动解析成消息段
+  - 可通过 `auto_escape` 参数关闭解析，按纯文本发送
+- 兼容 `websockets` 12 ~ 16 版本（自动适配 `extra_headers` / `additional_headers` 及请求头读取方式）
 - 支持多客户端配置
 - 支持 OneBot API 调用
   - 消息 API：获取消息、撤回消息、获取合并转发消息、发送合并转发消息
-  - 群组 API：获取群列表、获取群成员信息、获取群成员列表
+  - 群组 API：获取群列表、获取群信息、获取群成员信息、获取群成员列表
   - 好友 API：获取好友列表
+  - 群管理 / 请求处理：禁言、踢人、设置名片、处理加好友与加群请求等，直接透传给底层 OneBot 客户端
+  - 底层客户端不可用时自动退回兼容占位数据，保证副 Bot 不因接口报错中断
 
 ## 安装
 
@@ -52,7 +66,7 @@
 | uri | WebSocket 服务端 URI 地址 | ws://localhost:3001/OneBotv11 |
 | token | 访问令牌 | (空) |
 | report_self_message | 是否上报机器人自己发送的消息 | false |
-| enable_force_push_event | 是否强制推送所有事件 | true |
+| enable_force_push_event | 是否推送 notice/request 事件 | true |
 | message_post_format | 消息格式 (array/string) | array |
 | heart_interval | 心跳间隔 (毫秒) | 30000 |
 | ping_interval | Ping 间隔 (秒) | 10 |
@@ -78,7 +92,7 @@
 | path | WebSocket 路径 | /OneBotv11 |
 | token | 访问令牌 | (空) |
 | report_self_message | 是否上报自身消息 | false |
-| enable_force_push_event | 是否强制推送事件 | true |
+| enable_force_push_event | 是否推送 notice/request 事件 | true |
 | message_post_format | 消息格式 (array/string) | array |
 | heart_interval | 心跳间隔 (毫秒) | 30000 |
 | enable_group_forward | 启用群消息转发 | true |
@@ -97,7 +111,9 @@
 | host | 监听地址 | 127.0.0.1 |
 | port | 监听端口 | 3000 |
 | enable_cors | 是否启用 CORS 跨域 | true |
-| enable_websocket | 是否启用 WebSocket | false |
+| enable_websocket | 是否启用同端口 WebSocket 端点 `/ws` | false |
+| report_self_message | 是否上报自身消息 | false |
+| enable_force_push_event | 是否推送 notice/request 事件 | true |
 | message_post_format | 消息格式 (array/string) | array |
 | token | 访问令牌 | (空) |
 
@@ -111,6 +127,8 @@
 | host | 监听地址 | 127.0.0.1 |
 | port | 监听端口 | 3002 |
 | enable_cors | 是否启用 CORS 跨域 | true |
+| report_self_message | 是否上报自身消息 | false |
+| enable_force_push_event | 是否推送 notice/request 事件 | true |
 | message_post_format | 消息格式 (array/string) | array |
 | token | 访问令牌 | (空) |
 
@@ -124,7 +142,7 @@
 | base_url | HTTP 服务端基础 URL | http://localhost:3000 |
 | token | 访问令牌 | (空) |
 | report_self_message | 是否上报自身消息 | false |
-| enable_force_push_event | 是否强制推送事件 | true |
+| enable_force_push_event | 是否推送 notice/request 事件 | true |
 | message_post_format | 消息格式 (array/string) | array |
 | timeout | 请求超时时间 (秒) | 30 |
 | enable_group_forward | 启用群消息转发 | true |
@@ -193,13 +211,7 @@
 
 ### 帮助命令
 
-```
-bot_help
-帮助
-help
-```
-
-执行帮助命令后，会显示当前配置的指令格式。
+本插件不注册对话命令，仅按配置的触发规则转发消息；转发规则见上方「触发方式说明」。
 
 ## 消息类型支持
 
@@ -241,11 +253,24 @@ help
 
 ### 群组 API
 - `get_group_list` - 获取群列表
+- `get_group_info` - 获取群信息
 - `get_group_member_info` - 获取群成员信息
 - `get_group_member_list` - 获取群成员列表
 
 ### 好友 API
 - `get_friend_list` - 获取好友列表
+
+### 群管理与请求处理
+以下动作会直接透传给底层 OneBot 客户端，客户端不可用时返回兼容占位数据：
+
+- `set_group_ban` / `set_group_whole_ban` - 禁言
+- `set_group_kick` - 踢出群成员
+- `set_group_card` / `set_group_admin` - 设置名片 / 设置管理员
+- `set_friend_add_request` / `set_group_add_request` - 处理加好友、加群请求
+- `send_like` - 点赞
+- `get_stranger_info` - 获取陌生人信息
+- `get_status` / `can_send_image` / `can_send_record` - 状态与能力查询
+- `get_image` / `get_record` - 获取图片、语音文件
 
 ## 注意事项
 
@@ -254,11 +279,14 @@ help
 3. **调试模式**：启用 `debug` 后会输出更多日志信息，便于排查问题
 4. **多 Bot 互联**：可以同时配置多个网络连接方式，实现多 Bot 互联
 5. **消息格式**：推荐使用 `array` 格式以获得完整的消息结构支持
-6. **Token 验证**：如果配置了 token，请确保副 Bot 使用相同的 token 进行连接
+6. **Token 验证**：如果配置了 token，请确保副 Bot 使用相同的 token 进行连接；WebSocket 客户端会以 `Authorization: Bearer <token>` 请求头下发，服务端三种传递方式（Bearer 请求头、`access_token` 请求头、URL 查询参数）都支持
+7. **定向投递**：一条消息只会推给命中转发规则的连接；未配置任何触发条件（`command_prefix` / `forward_fprefix` / `forward_keyword`）的连接不会收到消息
+8. **自身消息**：`report_self_message` 关闭时（默认），`self_id` 等于机器人自身账号的消息不会被推送，避免消息回灌形成循环
+9. **路径校验**：WebSocket 服务器会校验 `path` 配置。客户端连接的具体路径与配置不一致时会被拒绝并记录日志；连接根路径 `/` 视为通配，保持向后兼容
 
 ## 版本信息
 
-- **当前版本**：1.1.0
+- **当前版本**：1.1.6
 - **AstrBot 版本要求**：>=4.16,<5
 - **作者**：苏月晅
 - **项目地址**：[https://github.com/yuexuan6699/astrbot_plugin_onebot_bridge](https://github.com/yuexuan6699/astrbot_plugin_onebot_bridge)

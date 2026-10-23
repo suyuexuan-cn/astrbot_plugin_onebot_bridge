@@ -1,0 +1,28 @@
+# Ruff 配置
+# AstrBot 4.x 要求 Python >= 3.10，因此可以直接使用 PEP 585 / PEP 604 的新式注解
+# （dict[str, Any] / X | None），无需 typing.Dict / Optional。
+target-version = "py310"
+line-length = 120
+
+[lint]
+select = [
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "F",     # pyflakes：未定义名、未使用导入
+    "I",     # isort：导入排序
+    "UP",    # pyupgrade：旧语法/旧注解
+    "B",     # bugbear：常见陷阱
+    "SIM",   # simplify
+    "PERF",  # perflint
+    "ASYNC", # flake8-async：async 函数里的阻塞调用
+    "RUF",   # ruff 自有规则
+]
+
+# 说明：不启用 flake8-blind-except（BLE001）。
+# 本插件处在网络边界，握手、事件推送、连接清理都必须兜底捕获异常，
+# 单帧出错不能让整条连接挂掉；逐处加 noqa 反而会淹没真正的错误分支。
+ignore = [
+    "E501",                        # 中文注释与日志下强制折行可读性更差
+    "RUF001", "RUF002", "RUF003",  # 全角标点在中文文案里是正常写法
+    "PERF203",                     # 循环内 try/except：这里就是要逐条隔离异常
+]

@@ -1,11 +1,12 @@
-from .base import OneBotAPIHandler
-from .message import MessageAPI
-from .group import GroupAPI
+from .base import OneBotAPIHandler, RawAPI
 from .friend import FriendAPI
+from .group import GroupAPI
+from .message import MessageAPI
 
 __all__ = [
-    "OneBotAPIHandler",
-    "MessageAPI", 
+    "FriendAPI",
     "GroupAPI",
-    "FriendAPI"
+    "MessageAPI",
+    "OneBotAPIHandler",
+    "RawAPI"
 ]
