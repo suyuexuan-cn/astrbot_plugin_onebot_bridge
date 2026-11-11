@@ -294,7 +294,7 @@
 ## 作者
 
 苏月晅  
-[联系本作者](https://suyuexuan.cn/contact.html)
+[联系本作者](https://suyuexuan.cn/contact)
 
 ## 许可证
 
