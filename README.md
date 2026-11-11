@@ -289,12 +289,12 @@
 - **当前版本**：1.1.6
 - **AstrBot 版本要求**：>=4.16,<5
 - **作者**：苏月晅
-- **项目地址**：[https://github.com/yuexuan6699/astrbot_plugin_onebot_bridge](https://github.com/yuexuan6699/astrbot_plugin_onebot_bridge)
+- **项目地址**：[https://github.com/suyuexuan-cn/astrbot_plugin_onebot_bridge](https://github.com/suyuexuan-cn/astrbot_plugin_onebot_bridge)
 
 ## 作者
 
 苏月晅  
-[联系本作者](https://yuexuan6699.dpdns.org/contact.html)
+[联系本作者](https://suyuexuan.cn/contact.html)
 
 ## 许可证
 
