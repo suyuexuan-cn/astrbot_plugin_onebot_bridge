@@ -286,7 +286,7 @@
 
 ## 版本信息
 
-- **当前版本**：1.1.6
+- **当前版本**：1.1.7
 - **AstrBot 版本要求**：>=4.16,<5
 - **作者**：苏月晅
 - **项目地址**：[https://github.com/suyuexuan-cn/astrbot_plugin_onebot_bridge](https://github.com/suyuexuan-cn/astrbot_plugin_onebot_bridge)

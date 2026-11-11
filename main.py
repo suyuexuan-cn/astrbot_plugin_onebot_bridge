@@ -7,7 +7,7 @@ from astrbot.api.star import Context, Star, register
 
 from .service import BotCommunicationCore
 
-PLUGIN_VERSION = "1.1.6"
+PLUGIN_VERSION = "1.1.7"
 
 #: 支持的网络连接模板类型
 SUPPORTED_TEMPLATE_KEYS = (
